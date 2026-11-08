@@ -1,0 +1,10 @@
+{
+	"id": "code-companion",
+	"name": "Code Companion",
+	"version": "0.1.0",
+	"minAppVersion": "1.7.2",
+	"description": "A developer's work journal from your git repositories: today's commits in the daily note, a weekly report, and a TODO list that opens in your editor.",
+	"author": "Tony Peonio",
+	"authorUrl": "https://github.com/TonyPeonio",
+	"isDesktopOnly": true
+}

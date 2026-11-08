@@ -1,0 +1,36 @@
+/* Code Companion */
+
+.code-companion-modal .code-companion-modal-help {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	margin: 0 0 var(--size-4-3);
+}
+
+.code-companion-modal .code-companion-modal-error {
+	color: var(--text-error);
+	font-size: var(--font-ui-small);
+	margin: var(--size-4-2) 0 0;
+}
+
+.code-companion-wide {
+	width: 100%;
+	min-width: 24em;
+}
+
+.code-companion-textarea {
+	width: 100%;
+	min-height: 5em;
+	font-family: var(--font-monospace);
+	font-size: var(--font-ui-small);
+}
+
+.code-companion-repo {
+	border-top: 1px solid var(--background-modifier-border);
+	padding-top: var(--size-4-2);
+}
+
+.code-companion-repo .setting-item {
+	border-top: none;
+	padding-top: var(--size-4-1);
+	padding-bottom: var(--size-4-1);
+}
