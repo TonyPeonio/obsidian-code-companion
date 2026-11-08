@@ -59,24 +59,29 @@ export default class CodeCompanionPlugin extends Plugin {
 		);
 		const path = dailyNotePath(s.dailyFolder, s.dailyFormat, date);
 		const basename = path.split("/").pop()?.replace(/\.md$/, "") ?? date;
-		let content: string;
-		if (this.vault.exists(path)) content = await this.vault.read(path);
-		else if (s.dailyTemplate && this.vault.exists(s.dailyTemplate)) content = applyTemplate(await this.vault.read(s.dailyTemplate), date, basename);
-		else {
-			if (s.dailyTemplate) new Notice(`Template "${s.dailyTemplate}" not found; creating a minimal daily note.`);
-			content = minimalDailyBody(date, s.heading);
+		try {
+			let content: string;
+			if (this.vault.exists(path)) content = await this.vault.read(path);
+			else if (s.dailyTemplate && this.vault.exists(s.dailyTemplate)) content = applyTemplate(await this.vault.read(s.dailyTemplate), date, basename);
+			else {
+				if (s.dailyTemplate) new Notice(`Template "${s.dailyTemplate}" not found; creating a minimal daily note.`);
+				content = minimalDailyBody(date, s.heading);
+			}
+			const updated = upsertBlock(content, s.heading, block);
+			if (updated !== content) await writeNote(this.vault, path, updated);
+			// The bookkeeping (last commit seen per repository) is only advanced once the note is written.
+			for (let i = 0; i < s.repos.length; i++) {
+				const next = results[i].next;
+				if (next) s.state[s.repos[i].path] = next;
+			}
+			await this.saveSettings();
+			const commits = results.reduce((n, r) => n + r.day.commits.length, 0);
+			const failed = results.filter((r) => r.day.error).length;
+			new Notice(`${commits} commit${commits === 1 ? "" : "s"} across ${s.repos.length} repositor${s.repos.length === 1 ? "y" : "ies"} written to ${path}.${failed ? ` ${failed} failed; see the note.` : ""}`, 6000);
+			await this.app.workspace.openLinkText(path.replace(/\.md$/, ""), "", false);
+		} catch (err) {
+			new Notice(`Could not write today's block to ${path}: ${(err as Error).message}`, 10000);
 		}
-		const updated = upsertBlock(content, s.heading, block);
-		if (updated !== content) await writeNote(this.vault, path, updated);
-		for (let i = 0; i < s.repos.length; i++) {
-			const next = results[i].next;
-			if (next) s.state[s.repos[i].path] = next;
-		}
-		await this.saveSettings();
-		const commits = results.reduce((n, r) => n + r.day.commits.length, 0);
-		const failed = results.filter((r) => r.day.error).length;
-		new Notice(`${commits} commit${commits === 1 ? "" : "s"} across ${s.repos.length} repositor${s.repos.length === 1 ? "y" : "ies"} written to ${path}.${failed ? ` ${failed} failed; see the note.` : ""}`, 6000);
-		await this.app.workspace.openLinkText(path.replace(/\.md$/, ""), "", false);
 	}
 
 	async weeklyReport(week: IsoWeek): Promise<void> {
@@ -115,10 +120,14 @@ export default class CodeCompanionPlugin extends Plugin {
 		}
 		const content = renderWeeklyReport(week, isoWeekDates(week), repos, { model: summarized ? s.model : undefined, generatedOn: today() });
 		const path = reportPath(s.reportsFolder, week);
-		await writeNote(this.vault, path, content);
-		const commits = repos.reduce((n, r) => n + r.commits.length, 0);
-		new Notice(`${commits} commit${commits === 1 ? "" : "s"} in the report ${path}.`);
-		await this.app.workspace.openLinkText(path.replace(/\.md$/, ""), "", false);
+		try {
+			await writeNote(this.vault, path, content);
+			const commits = repos.reduce((n, r) => n + r.commits.length, 0);
+			new Notice(`${commits} commit${commits === 1 ? "" : "s"} in the report ${path}.`);
+			await this.app.workspace.openLinkText(path.replace(/\.md$/, ""), "", false);
+		} catch (err) {
+			new Notice(`Could not write the report ${path}: ${(err as Error).message}`, 10000);
+		}
 	}
 
 	async scanTodos(): Promise<void> {
@@ -147,10 +156,14 @@ export default class CodeCompanionPlugin extends Plugin {
 			notice.hide();
 		}
 		const content = renderTodoNote(results, s.editor, { generatedOn: today(), showAge: s.todoBlame });
-		await writeNote(this.vault, s.todoNote, content);
-		const total = results.reduce((n, r) => n + r.hits.length, 0);
-		new Notice(`${total} marker${total === 1 ? "" : "s"} written to ${s.todoNote}.`);
-		await this.app.workspace.openLinkText(s.todoNote.replace(/\.md$/, ""), "", false);
+		try {
+			await writeNote(this.vault, s.todoNote, content);
+			const total = results.reduce((n, r) => n + r.hits.length, 0);
+			new Notice(`${total} marker${total === 1 ? "" : "s"} written to ${s.todoNote}.`);
+			await this.app.workspace.openLinkText(s.todoNote.replace(/\.md$/, ""), "", false);
+		} catch (err) {
+			new Notice(`Could not write ${s.todoNote}: ${(err as Error).message}`, 10000);
+		}
 	}
 
 	async openTodayBlock(): Promise<void> {
@@ -160,11 +173,15 @@ export default class CodeCompanionPlugin extends Plugin {
 			new Notice(`No daily note for today yet (${path}). Run Log today's work to create it.`);
 			return;
 		}
-		const content = await this.vault.read(path);
-		const heading = headingText(s.heading);
-		const hasHeading = new RegExp(`^#+\\s*${heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`, "im").test(content);
-		await this.app.workspace.openLinkText(hasHeading ? `${path.replace(/\.md$/, "")}#${heading}` : path.replace(/\.md$/, ""), "", false);
-		if (!hasHeading) new Notice(`Today's note has no "${heading}" heading yet. Run Log today's work to add it.`);
+		try {
+			const content = await this.vault.read(path);
+			const heading = headingText(s.heading);
+			const hasHeading = new RegExp(`^#+\\s*${heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`, "im").test(content);
+			await this.app.workspace.openLinkText(hasHeading ? `${path.replace(/\.md$/, "")}#${heading}` : path.replace(/\.md$/, ""), "", false);
+			if (!hasHeading) new Notice(`Today's note has no "${heading}" heading yet. Run Log today's work to add it.`);
+		} catch (err) {
+			new Notice(`Could not open ${path}: ${(err as Error).message}`, 10000);
+		}
 	}
 
 	/** Prompts for a folder, validates it with git, saves it. Resolves the new config or null. */
