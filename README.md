@@ -6,18 +6,19 @@ with per-repository numbers, and a **TODO list** whose rows open the file in you
 read from `git` on your machine; a local model (via [Ollama](https://ollama.com)) can optionally
 summarise the week from commit messages.
 
-Code Companion is one of a set of Obsidian plugins by the same author, all local and all at
-[github.com/TonyPeonio](https://github.com/TonyPeonio):
-[Local Vault Agent](https://github.com/TonyPeonio/obsidian-local-vault-agent) (search, compile and
-edit notes with a local Ollama agent), [Lecture Companion](https://github.com/TonyPeonio/obsidian-lecture-companion)
-(record lectures with local transcription and summarise them into course notes),
-[Canvas Companion](https://github.com/TonyPeonio/obsidian-canvas-companion) (Canvas LMS assignments,
-due dates and grades as notes), [Exam Companion](https://github.com/TonyPeonio/obsidian-exam-companion)
-(study plans and quizzes from your notes), [Paper Companion](https://github.com/TonyPeonio/obsidian-paper-companion)
-(Zotero search and page-cited reading notes), [Research Log Companion](https://github.com/TonyPeonio/obsidian-research-log-companion)
-(experiment logs with file hashes and git provenance), [Meeting Companion](https://github.com/TonyPeonio/obsidian-meeting-companion)
-(meeting notes from local transcription) and [Job Hunt Companion](https://github.com/TonyPeonio/obsidian-job-hunt-companion)
-(applications, contacts and follow-ups as notes). Each works on its own.
+Code Companion is part of the Companion suite of local-first Obsidian plugins by Tony Peonio for
+students and researchers: your machine does the work, every change is a diff you approve, and the
+numbers are published. The others are Local Vault Agent (local Ollama agent that searches, compiles,
+edits notes), Lecture Companion (live local lecture transcription, Canvas slides, Ollama summaries),
+Canvas Companion (Canvas LMS assignments, grades and announcements as notes), Exam Companion
+(day-by-day study plan, daily quizzes and flashcards), Paper Companion (Zotero search by meaning,
+page-cited reading notes), Research Log Companion (append-only lab notebook with git, parameters,
+data hashes), Meeting Companion (local meeting transcription, decisions, action items, weekly
+digest), Job Hunt Companion (job applications as notes, resume tailoring, interview questions),
+Fellowship Companion (grants and fellowships: deadlines, materials, letters, eligibility), Teaching
+Companion (local-model rubric grading with verbatim evidence) and Branching Table of Contents
+(parent/child properties as a rooted family tree). All at
+[github.com/TonyPeonio](https://github.com/TonyPeonio).
 
 - **Your commits, in your daily note.** One block under `## Code`: per repository, how many commits,
   lines added and removed, files touched; one line per commit with the files it changed and a link
